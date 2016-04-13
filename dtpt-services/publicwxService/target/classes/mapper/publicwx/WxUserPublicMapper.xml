@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dt.dtpt.mybatis.mapper.publicwx.WxUserPublicMapper" >
+  <resultMap id="BaseResultMap" type="com.dt.dtpt.mybatis.model.publicwx.WxUserPublic" >
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <result column="USER_PWX_ID" property="userPwxId" jdbcType="VARCHAR" />
+    <result column="PUBLIC_ID" property="publicId" jdbcType="VARCHAR" />
+    <result column="USER_ID" property="userId" jdbcType="VARCHAR" />
+    <result column="STATE" property="state" jdbcType="INTEGER" />
+    <result column="PULLER_ID" property="pullerId" jdbcType="VARCHAR" />
+    <result column="WX_OPENID" property="wxOpenid" jdbcType="VARCHAR" />
+    <result column="WX_UNIONID" property="wxUnionid" jdbcType="VARCHAR" />
+    <result column="ADD_DATE" property="addDate" jdbcType="DATE" />
+    <result column="AS_NAME" property="asName" jdbcType="VARCHAR" />
+    <result column="LOGO" property="logo" jdbcType="VARCHAR" />
+    <result column="IN_CITY" property="inCity" jdbcType="VARCHAR" />
+    <result column="REMOVE_DATE" property="removeDate" jdbcType="DATE" />
+  </resultMap>
+</mapper>
