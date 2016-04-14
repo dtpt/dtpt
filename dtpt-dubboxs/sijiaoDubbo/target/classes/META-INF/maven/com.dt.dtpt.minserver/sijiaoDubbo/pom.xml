@@ -13,6 +13,12 @@
         <skip_maven_deploy>false</skip_maven_deploy>
         <sijiaoService.version>1</sijiaoService.version>
         <dubbo.version>2.8.4</dubbo.version>
+        <mybatis.version>3.3.1</mybatis.version>
+        <mapper.version>3.3.8</mapper.version>
+        <pagehelper.version>4.1.1</pagehelper.version>
+        <mysql.version>5.1.29</mysql.version>
+        <spring.version>4.1.2.RELEASE</spring.version>
+        <mybatis.spring.version>1.2.4</mybatis.spring.version>
     </properties>
     <dependencies>
         <dependency>
@@ -63,7 +69,7 @@
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
-            <version>3.4.6</version>
+            <version>3.4.8</version>
         </dependency>
         <dependency>
             <groupId>com.github.sgroschupf</groupId>
@@ -210,10 +216,144 @@
             <version>1.55</version>
         </dependency>
   	<dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-oxm</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>4.2.3.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+            <version>1.8.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+            <version>1.8.7</version>
+		</dependency>
+        <!--mysql-->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+        <!--druid
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.0.11</version>
+        </dependency> -->
+
+        <!--Mybatis-->
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>${mybatis.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>${mybatis.spring.version}</version>
+        </dependency>
+        <!-- Mybatis Generator -->
+        <dependency>
+            <groupId>org.mybatis.generator</groupId>
+            <artifactId>mybatis-generator-core</artifactId>
+            <version>1.3.2</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <!--分页插件-->
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper</artifactId>
+            <version>${pagehelper.version}</version>
+        </dependency>
+        <!--通用Mapper-->
+        <dependency>
+            <groupId>tk.mybatis</groupId>
+            <artifactId>mapper</artifactId>
+            <version>${mapper.version}</version>
+        </dependency>
+	  	<dependency>
   		<groupId>com.dt.dtpt.service</groupId>
   		<artifactId>sijiaoService</artifactId>
   		<version>${sijiaoService.version}</version>
   	</dependency>
+	  	<dependency>
+	  		<groupId>c3p0</groupId>
+	  		<artifactId>c3p0</artifactId>
+	  		<version>0.9.1.1</version>
+	  	</dependency>
+	  	<dependency>
+	  		<groupId>com.mchange</groupId>
+	  		<artifactId>mchange-commons-java</artifactId>
+	  		<version>0.2.7</version>
+	  	</dependency>
   </dependencies>
-    <version>1</version>
+  <build>
+  <resources>
+	<resource>
+	<targetPath>${project.build.directory}/classes</targetPath>
+	<directory>src/main/resources</directory>
+	<filtering>true</filtering>
+	<includes>
+	<include>**/*.xml</include>
+	<include>**/*.properties</include>
+	</includes>
+	</resource>
+	<resource>
+	<targetPath>${project.build.directory}/classes/META-INF/spring</targetPath>
+	<directory>src/main/resources/spring</directory>
+	<filtering>true</filtering>
+	<includes>
+	<include>dubbo-sijiao-provider.xml</include>
+	</includes>
+	</resource>
+   </resources>
+	<plugins>
+	<!-- 打包jar文件时，配置manifest文件，加入lib包的jar依赖 -->
+		<plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-jar-plugin</artifactId>
+		<configuration>
+		<classesDirectory>target/classes/</classesDirectory>
+		<archive>
+		<manifest>
+		<mainClass>com.alibaba.dubbo.container.Main</mainClass>
+		<addClasspath>true</addClasspath>
+		<classpathPrefix>lib/</classpathPrefix>
+		</manifest>
+		<manifestEntries>
+		<Class-Path>.</Class-Path>
+		</manifestEntries>
+		</archive>
+		</configuration>
+		</plugin>
+	</plugins>
+  </build>
 </project>

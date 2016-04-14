@@ -4,9 +4,7 @@ import com.dt.dtpt.util.Page;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
 
-@Service
 public abstract interface IService<T>
 {
   public static final int MIN_PAGE_SIZE = 1;
@@ -25,7 +23,7 @@ public abstract interface IService<T>
 
   int updateNotNull(T entity);
 
-  List<T> selectByExample(Object example);
+  List<T> select(T entity);
 
   public List<T> findAll();
 

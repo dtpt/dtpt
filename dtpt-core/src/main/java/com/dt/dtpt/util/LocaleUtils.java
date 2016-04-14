@@ -12,6 +12,11 @@ import javax.servlet.http.HttpServletRequest;
  * 
  */
 public class LocaleUtils {
+	
+	public static final String LOCALE_CN = "CN";
+	
+	public static String def_locale = LOCALE_CN;
+	
 	/**
 	 * 根据Key获取对应的内容
 	 * 
@@ -29,7 +34,8 @@ public class LocaleUtils {
 	 * @return
 	 */
 	public static String get(String key, HttpServletRequest request) {
-		Locale locale = request == null ? new Locale(ConfigUtils.get("defaultLang")) : request.getLocale();
+		String tlocale = ConfigUtils.get("defaultLang");
+		Locale locale = request == null ? new Locale(tlocale == null?def_locale:tlocale) : request.getLocale();
 		ResourceBundle resource = ResourceBundle.getBundle("messages", locale);
 		String value = resource.getString(key);
 		if (value.length() == 0) {

@@ -24,7 +24,7 @@
         <jdk.version>1.6</jdk.version>
         <!--  依赖版本  -->
         <mybatis.version>3.3.1</mybatis.version>
-        <mapper.version>3.3.6</mapper.version>
+        <mapper.version>3.3.8</mapper.version>
         <pagehelper.version>4.1.1</pagehelper.version>
         <mysql.version>5.1.29</mysql.version>
         <spring.version>4.1.2.RELEASE</spring.version>
@@ -120,7 +120,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-            <version>${spring.version}</version>
+            <version>4.2.3.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

@@ -5,44 +5,50 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.ws.rs.PathParam;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dt.dtpt.mybatis.model.sijiao.EduCourse;
 import com.dt.dtpt.mybatis.model.sijiao.EduCourseStudent;
 import com.dt.dtpt.mybatis.model.sijiao.EduStudent;
 import com.dt.dtpt.mybatis.model.sijiao.EduTeacher;
-import com.dt.dtpt.service.IService;
+import com.dt.dtpt.service.impl.EduCourseService;
+import com.dt.dtpt.service.impl.EduCourseStudentService;
+import com.dt.dtpt.service.impl.EduStudentService;
+import com.dt.dtpt.service.impl.EduTeacherService;
 import com.dt.dtpt.service.publicwx.PublicwxService;
 import com.dt.dtpt.service.sijiao.SijiaoService;
 import com.dt.dtpt.util.Result;
 
-@Service(value = "sijiaoService")
+@Service
 @Transactional(readOnly = true)
 public class SijiaoServiceImpl implements SijiaoService {
 
 	@Autowired
-	IService<EduCourse> eduCourseService;
+	EduCourseService eduCourseService;
 	
 	@Autowired
-	IService<EduTeacher> eduTeacherService;
+	EduTeacherService eduTeacherService;
 	
 	@Autowired
-	IService<EduStudent> eduStudentService;
+	EduStudentService eduStudentService;
 	
 	@Autowired
-	IService<EduCourseStudent> eduCourseStudentService;
+	EduCourseStudentService eduCourseStudentService;
 	
 	@Autowired
 	PublicwxService publicwxService;
 	
-	public Result isWxManerger(String shId, String userOpenID) {
+	public Result isWxManerger(@PathParam("shId") String shId, @PathParam("userOpenID") String userOpenID) {
 		return publicwxService.isManerger(userOpenID, shId);
 	}
 
-	public Result findWxCourses(String shId, EduCourse eduCourse,
-			int pageNumber, int pageSize) {
+	public Result findWxCourses(@PathParam("shId") String shId, EduCourse eduCourse,
+			@PathParam("pageNumber") int pageNumber, @PathParam("pageSize") int pageSize) {
 		if(shId != null && !"".equals(shId)){
 			if(eduCourse == null) eduCourse = new EduCourse();
 			eduCourse.setUserId(shId);
@@ -52,8 +58,9 @@ public class SijiaoServiceImpl implements SijiaoService {
 		}
 	}
 
+	@Transactional(propagation = Propagation.REQUIRED)
 	@SuppressWarnings("deprecation")
-	public Result addCourseByWx(String shId, String userOpenID, EduCourse course) {
+	public Result addCourseByWx(@PathParam("shId") String shId, @PathParam("userOpenID") String userOpenID, EduCourse course) {
 		if(isWxManerger(shId, userOpenID).isSuccess()){
 			if(course != null && course.getCourseName() != null && !"".equals(course.getCourseName())
 					&& course.getSubjectSub() != null && !"".equals(course.getSubjectSub())
@@ -66,7 +73,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 				Date date = new Date();
 				EduTeacher teacher=new EduTeacher();
 				teacher.setTeacherName(course.getTeacherName());
-				List<EduTeacher> teachers = eduTeacherService.selectByExample(teacher);
+				List<EduTeacher> teachers = eduTeacherService.select(teacher);
 				String teacherId = null;
 				if(teachers != null && teachers.size() > 0){
 					teacherId = teachers.get(0).getTeacherId();
@@ -98,18 +105,19 @@ public class SijiaoServiceImpl implements SijiaoService {
 		}
 	}
 
-	public Result findEduStudents(String userOpenID) {
+	public Result findEduStudents(@PathParam("userOpenID") String userOpenID) {
 		if(userOpenID != null && !"".equals(userOpenID)){
 			EduStudent student = new EduStudent();
 			student.setWxOpenid(userOpenID);
-			List<EduStudent> students = eduStudentService.selectByExample(student);
+			List<EduStudent> students = eduStudentService.select(student);
 			return Result.success(students);
 		}else{
 			return Result.failure("参数校验失败","用户微信OPENID为空");
 		}
 	}
 
-	public Result addStudentByWx(String shId,String userOpenID, EduStudent eduStudent) {
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Result addStudentByWx(@PathParam("shId") String shId,@PathParam("userOpenID") String userOpenID, EduStudent eduStudent) {
 		if(userOpenID != null && !"".equals(userOpenID)){
 			if(eduStudent != null && eduStudent.getStudentName() != null && !"".equals(eduStudent.getStudentName())
 					&& eduStudent.getPhone() != null && !"".equals(eduStudent.getPhone())
@@ -131,11 +139,12 @@ public class SijiaoServiceImpl implements SijiaoService {
 		}
 	}
 
-	public Result addCourseByWx(String userOpenID, String courseId) {
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Result addCourseByWx(@PathParam("userOpenID") String userOpenID, @PathParam("courseId") String courseId) {
 		if(userOpenID != null && !"".equals(userOpenID) && courseId != null && !"".equals(courseId)){
 			EduStudent eduStudent = new EduStudent();
 			eduStudent.setWxOpenid(userOpenID);
-			List<EduStudent> students = eduStudentService.selectByExample(eduStudent);
+			List<EduStudent> students = eduStudentService.select(eduStudent);
 			if(students != null && students.size() > 0){
 				eduStudent = students.get(0);
 			}else{
@@ -168,7 +177,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 		}
 	}
 
-	public Result getCourse(String courseId) {
+	public Result getCourse(@PathParam("courseId") String courseId) {
 		if(courseId != null && !"".equals(courseId)){
 			EduCourse course = new EduCourse();
 			course.setCourseId(courseId);
@@ -179,7 +188,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 		}
 	}
 
-	public Result geStudent(String studentId) {
+	public Result getStudent(@PathParam("studentId") String studentId) {
 		if(studentId != null && !"".equals(studentId)){
 			EduStudent student = new EduStudent();
 			student.setStudentId(studentId);
@@ -190,7 +199,8 @@ public class SijiaoServiceImpl implements SijiaoService {
 		}
 	}
 
-	public Result payOk(String courseSid,String payJe) {
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Result payOk(@PathParam("courseSid") String courseSid,String payJe) {
 		if(courseSid != null && !"".equals(courseSid) && payJe != null && !"".equals(payJe)){
 			EduCourseStudent cs = new EduCourseStudent();
 			cs.setCourseSid(courseSid);

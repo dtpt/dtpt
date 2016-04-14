@@ -4,7 +4,11 @@ import org.springframework.stereotype.Service;
 
 import com.dt.dtpt.mybatis.model.publicwx.WxUserPublic;
 
-@Service(value = "wxuserPublicService")
+@Service
 public class WxUserPublicService extends BaseService<WxUserPublic>{
+
+	public WxUserPublicService() {
+		super();
+	}
 
 }

@@ -4,16 +4,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.dt.dtpt.mybatis.model.publicwx.WxPublic;
 import com.dt.dtpt.mybatis.model.publicwx.WxUserPublic;
@@ -21,28 +17,21 @@ import com.dt.dtpt.service.impl.WxPublicService;
 import com.dt.dtpt.service.impl.WxUserPublicService;
 import com.dt.dtpt.service.publicwx.PublicwxService;
 import com.dt.dtpt.util.Result;
-
-@Path("/publicwx/{shId}")
-@Consumes({"application/json; charset=UTF-8", "text/xml; charset=UTF-8"})
-@Produces({"application/json; charset=UTF-8", "text/xml; charset=UTF-8"})
+@Service
+@Transactional(readOnly = true)
 public class PublicwxServiceImpl implements PublicwxService {
 
-	@Lazy
 	@Autowired
 	WxPublicService wxpublicService;
 	
-	@Lazy
 	@Autowired
 	WxUserPublicService wxuserPublicService;
 	
-	@GET
 	public Result getWxPublicByShid(@PathParam("shId") String shId) {
-		System.out.println(shId);
 		if(shId != null && !"".equals(shId)){
 			WxPublic wxPublic = new WxPublic();
 			wxPublic.setUserId(shId);
-			System.out.println(1);
-			List<WxPublic> wxPublics = wxpublicService.selectByExample(wxPublic);
+			List<WxPublic> wxPublics = wxpublicService.select(wxPublic);
 			wxPublic  = null;
 			if(wxPublics != null && wxPublics.size() > 0) wxPublic = wxPublics.get(0);
 			return Result.success(wxPublic);
@@ -51,8 +40,6 @@ public class PublicwxServiceImpl implements PublicwxService {
 		}
 	}
 
-	@GET
-	@Path("/isManerger/{userOpenID}")
 	public Result isManerger(@PathParam("userOpenID") String userOpenID, @PathParam("shId") String shId) {
 		if(userOpenID != null && !"".equals(userOpenID) && shId != null && !"".equals(shId)){
 			WxPublic wxPublic = (WxPublic) this.getWxPublicByShid(shId).getResult();
@@ -66,14 +53,13 @@ public class PublicwxServiceImpl implements PublicwxService {
 		}
 	}
 
-	@POST
-	@Path("/attentionPublic")
+	@Transactional(propagation = Propagation.REQUIRED)
 	public Result attentionPublic(WxUserPublic wxUserPublic, @PathParam("shId") String shId) {
 		if(shId != null && !"".equals(shId) && wxUserPublic != null && wxUserPublic.getWxOpenid() != null 
 				&& !"".equals(wxUserPublic.getWxOpenid())){
 			WxPublic wxPublic = new WxPublic();
 			wxPublic.setUserId(shId);
-			List<WxPublic> wxPublics = wxpublicService.selectByExample(wxPublic);
+			List<WxPublic> wxPublics = wxpublicService.select(wxPublic);
 			wxPublic  = null;
 			if(wxPublics != null && wxPublics.size() > 0){
 				wxPublic = wxPublics.get(0);

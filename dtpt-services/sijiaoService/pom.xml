@@ -120,7 +120,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-            <version>${spring.version}</version>
+            <version>4.2.3.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -200,13 +200,18 @@
             <version>${mapper.version}</version>
         </dependency>
         <dependency>
-        	<groupId>com.dt.dtpt.service</groupId>
-        	<artifactId>publicwxService</artifactId>
+        	<groupId>com.dt.dtpt</groupId>
+        	<artifactId>dtpt-core</artifactId>
         	<version>1</version>
         </dependency>
         <dependency>
-        	<groupId>com.dt.dtpt</groupId>
-        	<artifactId>dtpt-core</artifactId>
+        	<groupId>javax.ws.rs</groupId>
+        	<artifactId>javax.ws.rs-api</artifactId>
+        	<version>2.0</version>
+        </dependency>
+        <dependency>
+        	<groupId>com.dt.dtpt.service</groupId>
+        	<artifactId>publicwxService</artifactId>
         	<version>1</version>
         </dependency>
     </dependencies>

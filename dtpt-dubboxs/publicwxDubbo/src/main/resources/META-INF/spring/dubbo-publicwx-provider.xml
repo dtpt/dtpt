@@ -10,14 +10,19 @@
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd  
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd" default-lazy-init="true">
 	
+		<context:component-scan base-package="com.dt.dtpt.service"/>
 		<context:property-placeholder ignore-unresolvable="true" location="classpath*:/config.properties" />
-
-		<!-- 数据源配置, 使用DBCP数据库连接池 -->
+		<!-- Simple连接池 -->
+<!-- 		<bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+			<property name="driverClass" value="${jdbc.driver}" />
+			<property name="url" value="${jdbc.url}" />
+			<property name="username" value="${jdbc.user}" />
+			<property name="password" value="${jdbc.password}" />
+		</bean> -->
 		<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
-			<!-- Connection Info -->
 			<property name="driverClass" value="${jdbc.driver}" />
 			<property name="jdbcUrl" value="${jdbc.url}" />
-			<property name="user" value="${jdbc.username}" />
+			<property name="user" value="${jdbc.user}" />
 			<property name="password" value="${jdbc.password}" />
 
 			<property name="acquireIncrement" value="${jdbc.acquireIncrement}" />
@@ -40,34 +45,23 @@
 		<property name="configLocation" value="classpath:mybatis-config.xml" />
 	</bean>
 
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.dt.dtpt.mybatis.mapper"/>
+    <bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.dt.dtpt.mybatis.mapper,tk.mybatis.mapper.common.Mapper"/>
+        <!-- 通用Mapper通过属性注入进行配置，默认不配置时会注册Mapper<T>接口-->
+        <property name="properties">
+            <value>
+                mappers=tk.mybatis.mapper.common.Mapper
+            </value>
+        </property>
     </bean>
-
+    
 	<!-- 事务配置 -->
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
 
 	<!-- 使用annotation定义事务 -->
-<!-- 	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" /> -->
-    <aop:aspectj-autoproxy/>
-
-    <aop:config>
-        <aop:pointcut id="appService" expression="execution(* com.dt.dtpt.service..*Service*.*(..))"/>
-        <aop:advisor advice-ref="txAdvice" pointcut-ref="appService"/>
-    </aop:config>
-
-    <tx:advice id="txAdvice" transaction-manager="transactionManager">
-        <tx:attributes>
-            <tx:method name="select*" read-only="true"/>
-            <tx:method name="query*" read-only="true"/>
-            <tx:method name="find*" read-only="true"/>
-            <tx:method name="get*" read-only="true"/>
-            <tx:method name="is*" read-only="true"/>
-            <tx:method name="*"/>
-        </tx:attributes>
-    </tx:advice>
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
 	<!-- 配置Spring JDBC -->
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<property name="dataSource" ref="dataSource" />
@@ -75,21 +69,14 @@
 	
 	<bean id="publicwxService" class="com.dt.dtpt.service.publicwx.impl.PublicwxServiceImpl" />
 	
-	
-    <dubbo:application name="publicwx-provider" owner="programmer" organization="dubbox" />
+    <dubbo:application name="dtpt" owner="programmer" organization="dubbox" />
 
-    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
-
-    <!--uncomment this if you want to test dubbo's monitor-->
-    <!--<dubbo:monitor protocol="registry"/>-->
+    <dubbo:registry address="zookeeper://169.254.71.21:2181"/>
 
     <!-- use tomcat server -->
     <dubbo:protocol name="rest" port="8888" threads="500" contextpath="services" server="tomcat" accepts="500"
                     extension="com.alibaba.dubbo.rpc.protocol.rest.support.LoggingFilter"/>
 
-	<dubbo:service interface="com.dt.dtpt.service.publicwx.PublicwxService" ref="publicwxService"  protocol="rest"  timeout="2000" connections="100" validation="true"/>
+	<dubbo:service interface="com.dt.dtpt.service.publicwx.PublicwxService" ref="publicwxService"  protocol="rest" connections="100" />
 
-
-
-	
 </beans>
