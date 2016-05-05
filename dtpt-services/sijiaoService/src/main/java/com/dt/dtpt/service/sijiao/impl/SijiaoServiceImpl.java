@@ -129,6 +129,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 				eduStudent.setEditDate(date);
 				eduStudent.setWxOpenid(userOpenID);
 				eduStudent.setStudentId(UUID.randomUUID().toString());
+				eduStudent.setUserId(shId);
 				int rs = eduStudentService.save(eduStudent);
 				if(rs > 0) return Result.success(eduStudent);
 				return Result.failure("添加学员失败");
