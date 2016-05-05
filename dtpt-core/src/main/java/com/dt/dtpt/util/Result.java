@@ -91,7 +91,7 @@ public class Result implements Serializable {
 	}
 
 	public static Result success() {
-		return new Result(true, LocaleUtils.get("result.Ok"), LocaleUtils.get("result.Ok"));
+		return new Result(true, "操作成功", "操作失败");
 	}
 
 	public static Result success(String title, String reason) {
@@ -99,7 +99,7 @@ public class Result implements Serializable {
 	}
 	
 	public static Result failure(String reason) {
-		return new Result(false, LocaleUtils.get("result.error"), reason);
+		return new Result(false, "操作发生异常", reason);
 	}
 	public static Result failure(String title, String reason) {
 		return new Result(false, title, reason);

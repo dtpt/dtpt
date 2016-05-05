@@ -1,6 +1,7 @@
 package com.dt.dtpt.service.sijiao.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -218,6 +219,24 @@ public class SijiaoServiceImpl implements SijiaoService {
 			return Result.failure("系统中未查到该学员选课信息");
 		}else{
 			return Result.failure("参数校验失败","学员选课编号或付款金额为空");
+		}
+	}
+
+	public Result getMyCourse(String shId, String userOpenID) {
+		if(userOpenID != null && !"".equals(userOpenID) && shId != null && !"".equals(shId)){
+			EduStudent student = new EduStudent();
+			student.setWxOpenid(userOpenID);
+			List<EduStudent> students = eduStudentService.select(student);
+			List<EduCourseStudent> ecs = new ArrayList<EduCourseStudent>();
+			if(students != null && students.size() > 0){
+				EduCourseStudent eCourseStudent = new EduCourseStudent();
+				eCourseStudent.setUserId(shId);
+				eCourseStudent.setStudentId(students.get(0).getStudentId());
+				ecs = eduCourseStudentService.select(eCourseStudent);
+			}
+			return Result.success(ecs);
+		}else{
+			return Result.failure("参数校验失败","用户微信OPENID或商户ID为空");
 		}
 	}
 

@@ -71,7 +71,7 @@
 	
     <dubbo:application name="dtpt" owner="programmer" organization="dubbox" />
 
-    <dubbo:registry address="zookeeper://169.254.71.21:2181"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
     <!-- use tomcat server -->
     <dubbo:protocol name="rest" port="8889" threads="500" contextpath="services" server="tomcat" accepts="500"

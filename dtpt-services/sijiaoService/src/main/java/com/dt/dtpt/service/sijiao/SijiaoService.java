@@ -38,7 +38,7 @@ public interface SijiaoService {
 	 * @param pageSize 每页数据行数，不能为空
 	 * @return 返回对象的success为true时，result属性为List<EduCourse>
 	 */
-	@GET
+	@POST
 	@Path("/findWxCourses/{shId}/{pageNumber}/{pageSize}")
 	public Result findWxCourses(@PathParam("shId") String shId, EduCourse eduCourse,
 			@PathParam("pageNumber") int pageNumber, @PathParam("pageSize") int pageSize);
@@ -109,5 +109,15 @@ public interface SijiaoService {
 	@Path("/payOk/{courseSid}")
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Result payOk(@PathParam("courseSid") String courseSid,String payJe);
+	
+	/**
+	 * 获取我已添加的课程
+	 * @param shId 管理员用户编号，不能为空
+	 * @param userOpenID 当前操作用户微信OPENID，不能为空
+	 * @return 返回对象的success属性值为true时，result属性为List<EduCourseStudent>
+	 */
+	@GET
+	@Path("/getMyCourse/{shId}/{userOpenID}")
+	public Result getMyCourse(@PathParam("shId") String shId,@PathParam("userOpenID") String userOpenID);
 	//==================== WX interface ==================
 }

@@ -63,11 +63,21 @@ public class PublicwxServiceImpl implements PublicwxService {
 			wxPublic  = null;
 			if(wxPublics != null && wxPublics.size() > 0){
 				wxPublic = wxPublics.get(0);
+				WxUserPublic wup = new WxUserPublic();
+				wup.setPublicId(wxPublic.getPublicId());
+				wup.setWxOpenid(wxUserPublic.getWxOpenid());
+				wup = wxuserPublicService.selectOne(wup);
 				Date date = new Date();
 				wxUserPublic.setAddDate(date);
 				wxUserPublic.setPublicId(wxPublic.getPublicId());
-				wxUserPublic.setUserPwxId(UUID.randomUUID().toString());
-				int rs = wxuserPublicService.save(wxUserPublic);
+				int rs = 0;
+				if(wup != null){
+					wxUserPublic.setUserPwxId(wup.getUserPwxId());
+					rs = wxuserPublicService.updateAll(wxUserPublic);
+				}else{
+					wxUserPublic.setUserPwxId(UUID.randomUUID().toString());
+					rs = wxuserPublicService.save(wxUserPublic);
+				}
 				if(rs > 0) return Result.success();
 			} 
 			return Result.failure("关注失败");

@@ -62,8 +62,8 @@ public abstract class BaseService<T> implements IService<T> {
 		page.setCurrentPage(pageNumber);
 		page.setPageSize(pageSize);
 		PageHelper.startPage(pageNumber, pageSize);
-		List<T> lst = this.mapper.selectByExample(queryObj);
-		int countnum = this.mapper.selectCountByExample(queryObj);
+		List<T> lst = this.mapper.select(queryObj);
+		int countnum = this.mapper.selectCount(queryObj);
 		page.setTotalCount(countnum);
 		int totalPage = countnum / page.getPageSize()
 				+ (countnum % page.getPageSize() == 0 ? 0 : 1);
@@ -77,7 +77,7 @@ public abstract class BaseService<T> implements IService<T> {
 		page.setCurrentPage(pageNumber);
 		page.setPageSize(pageSize);
 		PageHelper.startPage(pageNumber, pageSize);
-		List<T> lst = this.mapper.selectByExample(queryObj);
+		List<T> lst = this.mapper.select(queryObj);
 		return lst;
 	}
 
