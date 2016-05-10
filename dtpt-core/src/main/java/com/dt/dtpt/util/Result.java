@@ -91,7 +91,7 @@ public class Result implements Serializable {
 	}
 
 	public static Result success() {
-		return new Result(true, "操作成功", "操作失败");
+		return new Result(true, "操作成功", "");
 	}
 
 	public static Result success(String title, String reason) {

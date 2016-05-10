@@ -21,8 +21,37 @@
 			<param name="ConversionPattern" value="[%d{dd/MM/yy hh:mm:ss:sss z}] %t %5p %c{2}: %m%n" />
 		</layout>
 	</appender>
-	<root>
-		<level value="INFO" />
-		<appender-ref ref="CONSOLE" />
-	</root>
+    <appender name="myFile" class="org.apache.log4j.DailyRollingFileAppender">
+	<param name="File" value="../logs/sijiao_8889.log"/>
+	<param name="DatePattern" value="'.'yyyy-MM-dd"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%5p] %m [%l]%n"/>
+            <!--
+            <param name="ConversionPattern" value="%-d{yyyy-MM-dd HH:mm:ss} %-5p [%c{1}] - %m%n"/>
+            -->
+        </layout>
+    </appender>
+
+    <!-- Suppress success logging from InteractiveAuthenticationSuccessEvent -->
+    <logger name="org.springframework.security">
+        <level value="ERROR"/>
+    </logger>
+
+    <logger name="org.apache">
+        <level value="WARN"/>
+    </logger>
+
+    <logger name="org.springframework">
+        <level value="WARN"/>
+    </logger>
+   
+    <logger name="com.dt">
+        <level value="DEBUG"/>
+    </logger>
+
+    <root>
+        <level value="WARN"/>
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="myFile"/>
+    </root>
 </log4j:configuration>

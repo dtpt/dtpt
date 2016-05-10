@@ -61,6 +61,7 @@ public class PublicwxServiceImpl implements PublicwxService {
 			wxPublic.setUserId(shId);
 			List<WxPublic> wxPublics = wxpublicService.select(wxPublic);
 			wxPublic  = null;
+			String res = "";
 			if(wxPublics != null && wxPublics.size() > 0){
 				wxPublic = wxPublics.get(0);
 				WxUserPublic wup = new WxUserPublic();
@@ -79,8 +80,11 @@ public class PublicwxServiceImpl implements PublicwxService {
 					rs = wxuserPublicService.save(wxUserPublic);
 				}
 				if(rs > 0) return Result.success();
+				res = "更新数据库失败";
+			}else{
+				res = "未查找到对应公众号信息";
 			} 
-			return Result.failure("关注失败");
+			return Result.failure("关注失败",res);
 		}else{
 			return Result.failure("参数校验失败", "商户编号或用户微信openID为空");
 		}

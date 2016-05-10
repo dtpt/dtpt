@@ -3,6 +3,7 @@ package com.dt.dtpt.mybatis.model.sijiao;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+
 import javax.persistence.*;
 
 @Table(name = "edu_course")
@@ -10,6 +11,7 @@ public class EduCourse implements Serializable {
     /**
      * 课程编号
      */
+	@Id
     @Column(name = "COURSE_ID")
     private String courseId;
 

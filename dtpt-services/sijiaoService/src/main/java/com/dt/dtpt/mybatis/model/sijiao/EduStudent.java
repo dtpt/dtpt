@@ -2,6 +2,7 @@ package com.dt.dtpt.mybatis.model.sijiao;
 
 import java.io.Serializable;
 import java.util.Date;
+
 import javax.persistence.*;
 
 @Table(name = "edu_student")
@@ -9,6 +10,7 @@ public class EduStudent implements Serializable {
     /**
      * 学员编号
      */
+	@Id
     @Column(name = "STUDENT_ID")
     private String studentId;
 

@@ -10,6 +10,7 @@ public class EduCourseStudent implements Serializable {
     /**
      * 选课编号
      */
+	@Id
     @Column(name = "COURSE_SID")
     private String courseSid;
 

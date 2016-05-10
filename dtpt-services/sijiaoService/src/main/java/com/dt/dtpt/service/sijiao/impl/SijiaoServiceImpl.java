@@ -3,7 +3,9 @@ package com.dt.dtpt.service.sijiao.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.PathParam;
@@ -24,11 +26,18 @@ import com.dt.dtpt.service.impl.EduTeacherService;
 import com.dt.dtpt.service.publicwx.PublicwxService;
 import com.dt.dtpt.service.sijiao.SijiaoService;
 import com.dt.dtpt.util.Result;
+import com.dt.dtpt.vo.EduCourseStudentView;
 
 @Service
 @Transactional(readOnly = true)
 public class SijiaoServiceImpl implements SijiaoService {
 
+	public static Map<String, List<EduCourse>> shCourses = new HashMap<String, List<EduCourse>>();
+	
+	public static Map<String, Long> sysnTimes = new HashMap<String, Long>();
+	
+	public static final Long sysnTime = 5 * 60 * 1000l;
+	
 	@Autowired
 	EduCourseService eduCourseService;
 	
@@ -44,6 +53,27 @@ public class SijiaoServiceImpl implements SijiaoService {
 	@Autowired
 	PublicwxService publicwxService;
 	
+	private List<EduCourse> sysnShCourses(String shId){
+		List<EduCourse> ecs = null;
+		if(shCourses.containsKey(shId)){
+			Long st = sysnTimes.get(shId);
+			if(new Date().getTime() - st > sysnTime){
+				shCourses.put(shId, null);
+				EduCourse eduCourse = new EduCourse();
+				eduCourse.setUserId(shId);
+				shCourses.put(shId, eduCourseService.select(eduCourse));
+				sysnTimes.put(shId, new Date().getTime());
+			}
+		}else{
+			EduCourse eduCourse = new EduCourse();
+			eduCourse.setUserId(shId);
+			shCourses.put(shId, eduCourseService.select(eduCourse));
+			sysnTimes.put(shId, new Date().getTime());
+		}
+		ecs = shCourses.get(shId);
+		return ecs;
+	}
+	
 	public Result isWxManerger(@PathParam("shId") String shId, @PathParam("userOpenID") String userOpenID) {
 		return publicwxService.isManerger(userOpenID, shId);
 	}
@@ -51,9 +81,16 @@ public class SijiaoServiceImpl implements SijiaoService {
 	public Result findWxCourses(@PathParam("shId") String shId, EduCourse eduCourse,
 			@PathParam("pageNumber") int pageNumber, @PathParam("pageSize") int pageSize) {
 		if(shId != null && !"".equals(shId)){
-			if(eduCourse == null) eduCourse = new EduCourse();
-			eduCourse.setUserId(shId);
-			return Result.success(eduCourseService.queryList(eduCourse, pageNumber, pageSize));
+			List<EduCourse> ecs = sysnShCourses(shId);
+			int total = ecs.size();
+			int start = (pageNumber-1) * pageSize;
+			if(start < 0) start = 0;
+			int end = pageNumber * pageSize;
+			if(start >= total) ecs = new ArrayList<EduCourse>();
+			if(end > total) end = total;
+			if(start > end) end = start;
+			ecs = ecs.subList(start, end);
+			return Result.success(ecs);
 		}else{
 			return Result.failure("参数校验失败", "商户编号为空");
 		}
@@ -61,14 +98,13 @@ public class SijiaoServiceImpl implements SijiaoService {
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	@SuppressWarnings("deprecation")
-	public Result addCourseByWx(@PathParam("shId") String shId, @PathParam("userOpenID") String userOpenID, EduCourse course) {
+	public Result addCourseByAdmin(@PathParam("shId") String shId, @PathParam("userOpenID") String userOpenID, EduCourse course) {
 		if(isWxManerger(shId, userOpenID).isSuccess()){
 			if(course != null && course.getCourseName() != null && !"".equals(course.getCourseName())
 					&& course.getSubjectSub() != null && !"".equals(course.getSubjectSub())
 					&& course.getTeacherName() != null && !"".equals(course.getTeacherName())
 					&& course.getSemester() != null && course.getStartDate() != null
 					&& course.getEndDate() != null && course.getTeachTime() != null
-					&& course.getTeachAddress() != null && !"".equals(course.getTeachAddress())
 					&& course.getTotalCourse() != null && course.getMaxStudents() != null
 					&& course.getCourseInfo() != null && !"".equals(course.getCourseInfo())){	
 				Date date = new Date();
@@ -91,7 +127,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 				course.setEditDate(date);
 				course.setPayStudents(0);
 				course.setSubject("1");
-				course.setYear(date.getYear() + "");
+				course.setYear((date.getYear()+1900) + "");
 				course.setUserId(shId);
 				int rs = eduCourseService.save(course);
 				if(rs>0) {
@@ -152,10 +188,19 @@ public class SijiaoServiceImpl implements SijiaoService {
 			}else{
 				return Result.failure("此微信下面还没有学员");
 			}
+			EduCourseStudent qcs = new EduCourseStudent();
+			qcs.setCourseId(courseId);
+			qcs.setStudentId(eduStudent.getStudentId());
+			qcs.setIsPayed(0);
+			qcs = eduCourseStudentService.selectOne(qcs);
+			if(qcs != null && qcs.getCourseSid() != null) return new Result(true,"该课程您已经添加",null,qcs.getCourseSid());
 			EduCourse course = new EduCourse();
 			course.setCourseId(courseId);
 			course = eduCourseService.selectOne(course);
 			if(course != null){
+				if(course.getMaxStudents() - course.getPayStudents() < 1){
+					return Result.failure("该班级已报满");
+				}
 				Date date = new Date();
 				EduCourseStudent cs = new EduCourseStudent();
 				cs.setCourseId(courseId);
@@ -169,7 +214,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 				cs.setSubjectSub(course.getSubjectSub());
 				cs.setUserId(course.getUserId());
 				int rs = eduCourseStudentService.save(cs);
-				if(rs > 0) return Result.success();
+				if(rs > 0) return new Result(true,null,null,cs.getCourseSid());
 			}else{
 				return Result.failure("系统中未查到该课程");
 			}
@@ -213,7 +258,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 					cs.setPayJe(BigDecimal.valueOf(Double.valueOf(payJe)));
 					cs.setPayDate(new Date());
 					int rs = eduCourseStudentService.updateNotNull(cs);
-					if(rs < 1) Result.failure("付款状态修改失败");
+					if(rs < 1) return Result.failure("付款状态修改失败");
 				}
 				return Result.success();
 			}
@@ -235,9 +280,91 @@ public class SijiaoServiceImpl implements SijiaoService {
 				eCourseStudent.setStudentId(students.get(0).getStudentId());
 				ecs = eduCourseStudentService.select(eCourseStudent);
 			}
-			return Result.success(ecs);
+			List<EduCourseStudentView> ecsvs = new ArrayList<EduCourseStudentView>();
+			List<EduCourse> cs = shCourses.get(shId);
+			Map<String, EduCourse> cMap = new HashMap<String, EduCourse>();
+			for(EduCourse ec:cs){
+				cMap.put(ec.getCourseId(), ec);
+			}
+			for(EduCourseStudent es : ecs){
+				EduCourseStudentView ecsv = new EduCourseStudentView();
+				ecsv.setEduCourse(cMap.get(es.getCourseId()));
+				ecsv.setEduCourseStudent(es);
+				ecsvs.add(ecsv);
+			}
+			return Result.success(ecsvs);
 		}else{
 			return Result.failure("参数校验失败","用户微信OPENID或商户ID为空");
+		}
+	}
+
+	public Result getMyCourseForTime(String shId, String userOpenID) {
+		if(userOpenID != null && !"".equals(userOpenID) && shId != null && !"".equals(shId)){
+			EduStudent student = new EduStudent();
+			student.setWxOpenid(userOpenID);
+			List<EduStudent> students = eduStudentService.select(student);
+			List<EduCourseStudent> ecs = new ArrayList<EduCourseStudent>();
+			if(students != null && students.size() > 0){
+				EduCourseStudent eCourseStudent = new EduCourseStudent();
+				eCourseStudent.setUserId(shId);
+				eCourseStudent.setStudentId(students.get(0).getStudentId());
+				eCourseStudent.setIsPayed(1);
+				ecs = eduCourseStudentService.select(eCourseStudent);
+			}
+			List<EduCourseStudentView> ecsvs = new ArrayList<EduCourseStudentView>();
+			List<EduCourse> cs = shCourses.get(shId);
+			Map<String, EduCourse> cMap = new HashMap<String, EduCourse>();
+			for(EduCourse ec:cs){
+				cMap.put(ec.getCourseId(), ec);
+			}
+			for(EduCourseStudent es : ecs){
+				EduCourseStudentView ecsv = new EduCourseStudentView();
+				ecsv.setEduCourse(cMap.get(es.getCourseId()));
+				ecsv.setEduCourseStudent(es);
+				ecsvs.add(ecsv);
+			}
+			return Result.success(ecsvs);
+		}else{
+			return Result.failure("参数校验失败","用户微信OPENID或商户ID为空");
+		}
+	}
+
+	public Result getCourseSt(String shId,String courseSid) {
+		EduCourseStudent eCourseStudent = new EduCourseStudent();
+		eCourseStudent.setCourseSid(courseSid);
+		eCourseStudent = eduCourseStudentService.selectOne(eCourseStudent);
+		if(eCourseStudent != null){
+			List<EduCourse> cs = shCourses.get(shId);
+			Map<String, EduCourse> cMap = new HashMap<String, EduCourse>();
+			for(EduCourse ec:cs){
+				cMap.put(ec.getCourseId(), ec);
+			}
+			EduCourseStudentView ecsv = new EduCourseStudentView();
+			ecsv.setEduCourse(cMap.get(eCourseStudent.getCourseId()));
+			ecsv.setEduCourseStudent(eCourseStudent);
+			return Result.success(ecsv);
+		}
+		return Result.failure("未查到对应信息");
+	}
+
+	public Result prePay(String courseSid) {
+		String sql = "update edu_course_student e set e.is_payed='2' where e.course_sid=? and e.is_payed='0';";
+		int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{courseSid});
+		if(rs > 0 ){
+			return Result.success();
+		}else{
+			EduCourseStudent eCourseStudent = new EduCourseStudent();
+			eCourseStudent.setCourseSid(courseSid);
+			eCourseStudent = eduCourseStudentService.selectOne(eCourseStudent);
+			if(eCourseStudent != null){
+				if(eCourseStudent.getIsPayed().equals(2)){					
+					return Result.success();
+				} else{					
+					return Result.failure("您的课程课程已经失效或已经付款，请刷新您的课程");
+				}
+			}else{				
+				return Result.failure("您未添加该课程");
+			}
 		}
 	}
 

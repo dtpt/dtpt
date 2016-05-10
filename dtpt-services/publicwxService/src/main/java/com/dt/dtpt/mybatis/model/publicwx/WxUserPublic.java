@@ -2,6 +2,7 @@ package com.dt.dtpt.mybatis.model.publicwx;
 
 import java.io.Serializable;
 import java.util.Date;
+
 import javax.persistence.*;
 
 @Table(name = "wx_user_public")
@@ -9,6 +10,7 @@ public class WxUserPublic implements Serializable {
     /**
      * 编号
      */
+	@Id
     @Column(name = "USER_PWX_ID")
     private String userPwxId;
 

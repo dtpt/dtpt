@@ -50,9 +50,9 @@ public interface SijiaoService {
 	 * @return 返回对象的success属性为true是，操作成功；否则操作失败
 	 */
 	@POST
-	@Path("/addCourseByWx/{shId}/{userOpenID}")
+	@Path("/addCourseByAdmin/{shId}/{userOpenID}")
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Result addCourseByWx(@PathParam("shId") String shId, @PathParam("userOpenID") String userOpenID, EduCourse course);
+	public Result addCourseByAdmin(@PathParam("shId") String shId, @PathParam("userOpenID") String userOpenID, EduCourse course);
 	/**
 	 * 获取用户下已添加学员
 	 * @param userOpenID 当前操作用户微信OPENID，不能为空
@@ -77,7 +77,7 @@ public interface SijiaoService {
 	 * 学员添加课程
 	 * @param userOpenID 当前操作用户微信OPENID，不能为空
 	 * @param courseId 需要添加的课程编号，不能为空
-	 * @return 返回对象的success属性值为true时，添加成功；否则添加失败
+	 * @return 返回对象的success属性值为true时，添加成功,result值为courseSid(学员选课编号)；否则添加失败
 	 */
 	@POST
 	@Path("/addCourseByWx/{userOpenID}/{courseId}")
@@ -114,10 +114,38 @@ public interface SijiaoService {
 	 * 获取我已添加的课程
 	 * @param shId 管理员用户编号，不能为空
 	 * @param userOpenID 当前操作用户微信OPENID，不能为空
-	 * @return 返回对象的success属性值为true时，result属性为List<EduCourseStudent>
+	 * @return 返回对象的success属性值为true时，result属性为List<com.dt.dtpt.vo.EduCourseStudentView>
 	 */
 	@GET
 	@Path("/getMyCourse/{shId}/{userOpenID}")
 	public Result getMyCourse(@PathParam("shId") String shId,@PathParam("userOpenID") String userOpenID);
+	/**
+	 * 获取我已缴费的课程，学习历程接口
+	 * @param shId 管理员用户编号，不能为空
+	 * @param userOpenID 当前操作用户微信OPENID，不能为空
+	 * @return 返回对象的success属性值为true时，result属性为List<com.dt.dtpt.vo.EduCourseStudentView>
+	 */
+	@GET
+	@Path("/getMyCourse/{shId}/{userOpenID}")
+	public Result getMyCourseForTime(@PathParam("shId") String shId,@PathParam("userOpenID") String userOpenID);
+	
+	/**
+	 * 根据已添加课程编号获取已添加课程信息
+	 * @param courseSid 学员选课编号(订单编号)，不能为空
+	 * @return 返回对象的success属性值为true时，result属性为com.dt.dtpt.vo.EduCourseStudentView
+	 */
+	@GET
+	@Path("/getCourseSt/{shId}/{courseSid}")
+	public Result getCourseSt(@PathParam("shId") String shId,@PathParam("courseSid") String courseSid);
+	
+	/**
+	 * 判断是否可以付款，并置为订单状态为付款中
+	 * @param courseSid 学员选课编号(订单编号)，不能为空
+	 * @return 返回对象的success属性值为true时，可以付款；否则订单就是失效了，需要重新下单
+	 */
+	@GET
+	@Path("/prePay/{courseSid}")
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Result prePay(@PathParam("courseSid") String courseSid);
 	//==================== WX interface ==================
 }
