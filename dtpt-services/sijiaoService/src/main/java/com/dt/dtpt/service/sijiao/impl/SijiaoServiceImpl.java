@@ -412,6 +412,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 		List<EduCourseStudent> ecses = eduCourseStudentService.select(ecs);
 		for(EduCourseStudent ec:ecses){
 			String shId = ec.getUserId();
+			if(shCourses.get(shId) == null) this.sysnShCourses(shId);
 			for(EduCourse eCourse:shCourses.get(shId)){
 				if(eCourse.getCourseId().equals(ec.getCourseId())){
 					if(eCourse.getMaxStudents() - eCourse.getPayStudents() < eCourse.getMaxStudents() * warnNum/10){
