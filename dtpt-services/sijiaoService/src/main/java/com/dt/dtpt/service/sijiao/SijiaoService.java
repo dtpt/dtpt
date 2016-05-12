@@ -1,6 +1,7 @@
 package com.dt.dtpt.service.sijiao;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -147,5 +148,23 @@ public interface SijiaoService {
 	@Path("/prePay/{courseSid}")
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Result prePay(@PathParam("courseSid") String courseSid);
+	
+	/**
+	 * 检测未缴费的单，并判断可报人数是否为预警成数，是则置为已失效，已报名人数  -1
+	 * 假如最多可报20人，预警成数为 2/10，即预警数为4，此处该传参数2
+	 */
+	@GET
+	@Path("/noPayhandler/{warnNum}")
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void noPayhandler(@PathParam("warnNum") @DefaultValue("2") Integer warnNum);
+	
+	/**
+	 * 未缴费超出指定天数的课程，置为失效，即使可报人数还很多
+	 * @param offDay
+	 */
+	@GET
+	@Path("/noPayHanderforDay/{offDay}")
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void noPayHanderforDay(@PathParam("offDay") @DefaultValue("1") Integer offDay);
 	//==================== WX interface ==================
 }

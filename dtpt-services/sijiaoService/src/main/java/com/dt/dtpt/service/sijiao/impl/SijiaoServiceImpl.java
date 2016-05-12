@@ -53,6 +53,36 @@ public class SijiaoServiceImpl implements SijiaoService {
 	@Autowired
 	PublicwxService publicwxService;
 	
+	private void reloadShCourses(String shId){
+		if(shCourses.containsKey(shId)) shCourses.remove(shId);
+		if(sysnTimes.containsKey(shId)) sysnTimes.remove(shId);
+		this.sysnShCourses(shId);
+	}
+	
+	private void updateCoursePaynum(String shId,String courseId,int num){
+		if(shCourses.containsKey(shId)){
+			for(EduCourse ec:shCourses.get(shId)){
+				if(ec.getCourseId().equals(courseId)){
+					int paynum = ec.getPayStudents() + num;
+					if(paynum<0) paynum = 0;
+					if(paynum>ec.getMaxStudents()) paynum = ec.getMaxStudents();
+					ec.setPayStudents(paynum);
+					break;
+				}
+			}
+		}else{
+			this.reloadShCourses(shId);
+		}
+	}
+	
+	private void addShCourses(String shId,EduCourse eduCourse){
+		if(shCourses.containsKey(shId)){
+			shCourses.get(shId).add(eduCourse);
+		}else{
+			this.reloadShCourses(shId);
+		}
+	}
+	
 	private List<EduCourse> sysnShCourses(String shId){
 		List<EduCourse> ecs = null;
 		if(shCourses.containsKey(shId)){
@@ -131,6 +161,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 				course.setUserId(shId);
 				int rs = eduCourseService.save(course);
 				if(rs>0) {
+					addShCourses(shId, course);
 					return Result.success();
 				}
 				return Result.failure("课程添加失败");
@@ -201,6 +232,9 @@ public class SijiaoServiceImpl implements SijiaoService {
 				if(course.getMaxStudents() - course.getPayStudents() < 1){
 					return Result.failure("该班级已报满");
 				}
+				String sql = "update edu_course ec set ec.PAY_STUDENTS=ec.PAY_STUDENTS + 1 where ec.COURSE_ID=? and ec.PAY_STUDENTS<ec.MAX_STUDENTS";
+				int rs = eduCourseService.getJdbcTemplate().update(sql, new Object[]{courseId});
+				if(rs < 1) return Result.failure("该班级已报满");
 				Date date = new Date();
 				EduCourseStudent cs = new EduCourseStudent();
 				cs.setCourseId(courseId);
@@ -213,7 +247,8 @@ public class SijiaoServiceImpl implements SijiaoService {
 				cs.setSubject(course.getSubject());
 				cs.setSubjectSub(course.getSubjectSub());
 				cs.setUserId(course.getUserId());
-				int rs = eduCourseStudentService.save(cs);
+				rs = eduCourseStudentService.save(cs);
+				this.updateCoursePaynum(course.getUserId(), courseId, 1);
 				if(rs > 0) return new Result(true,null,null,cs.getCourseSid());
 			}else{
 				return Result.failure("系统中未查到该课程");
@@ -347,6 +382,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 		return Result.failure("未查到对应信息");
 	}
 
+	@Transactional(propagation = Propagation.REQUIRED)
 	public Result prePay(String courseSid) {
 		String sql = "update edu_course_student e set e.is_payed='2' where e.course_sid=? and e.is_payed='0';";
 		int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{courseSid});
@@ -364,6 +400,47 @@ public class SijiaoServiceImpl implements SijiaoService {
 				}
 			}else{				
 				return Result.failure("您未添加该课程");
+			}
+		}
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void noPayhandler(Integer warnNum) {
+		//检测未缴费的单，并判断可报人数是否为预警库数，是则置为已失效，已报名人数  -1
+		EduCourseStudent ecs = new EduCourseStudent();
+		ecs.setIsPayed(0);
+		List<EduCourseStudent> ecses = eduCourseStudentService.select(ecs);
+		for(EduCourseStudent ec:ecses){
+			String shId = ec.getUserId();
+			for(EduCourse eCourse:shCourses.get(shId)){
+				if(eCourse.getCourseId().equals(ec.getCourseId())){
+					if(eCourse.getMaxStudents() - eCourse.getPayStudents() < eCourse.getMaxStudents() * warnNum/10){
+						String sql = "update edu_course_student ecs set ecs.IS_PAYED='3' where ecs.COURSE_SID=? and ecs.IS_PAYED='0' and ecs.EDIT_DATE<?";
+						Date date = new Date(new Date().getTime() - 15*60*1000l);
+						int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{ec.getCourseSid(),date});
+						if(rs > 0){
+							sql = "update edu_course ec set ec.PAY_STUDENTS=ec.PAY_STUDENTS - 1 where ec.COURSE_ID=? ";
+							rs = eduCourseService.getJdbcTemplate().update(sql, new Object[]{ec.getCourseId()});
+							this.updateCoursePaynum(shId, eCourse.getCourseId(), -1);
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	public void noPayHanderforDay(Integer offDay) {
+		String sql = "select * from edu_course_student ecs where ecs.IS_PAYED='0' and ecs.EDIT_DATE<?";
+		Date date = new Date(new Date().getTime() - offDay*12*60*60*1000l);
+		List<EduCourseStudent> ecses = eduCourseStudentService.getJdbcTemplate().queryForList(sql, EduCourseStudent.class, new Object[]{date});
+		for(EduCourseStudent ecs:ecses){
+			sql = "update edu_course_student ecs set ecs.IS_PAYED='3' where ecs.COURSE_SID=? and ecs.IS_PAYED='0' and ecs.EDIT_DATE<?";
+			int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{ecs.getCourseSid(),date});
+			if(rs > 0){
+				sql = "update edu_course ec set ec.PAY_STUDENTS=ec.PAY_STUDENTS - 1 where ec.COURSE_ID=? ";
+				rs = eduCourseService.getJdbcTemplate().update(sql, new Object[]{ecs.getCourseId()});
+				this.updateCoursePaynum(ecs.getUserId(), ecs.getCourseId(), -1);
 			}
 		}
 	}
