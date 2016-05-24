@@ -223,8 +223,8 @@ public class SijiaoServiceImpl implements SijiaoService {
 			qcs.setCourseId(courseId);
 			qcs.setStudentId(eduStudent.getStudentId());
 			qcs.setIsPayed(0);
-			qcs = eduCourseStudentService.selectOne(qcs);
-			if(qcs != null && qcs.getCourseSid() != null) return new Result(true,"该课程您已经添加",null,qcs.getCourseSid());
+			List<EduCourseStudent> qcses = eduCourseStudentService.select(qcs);
+			if(qcses != null && qcses.size() > 0) return new Result(true,"该课程您已经添加",null,qcs.getCourseSid());
 			EduCourse course = new EduCourse();
 			course.setCourseId(courseId);
 			course = eduCourseService.selectOne(course);
@@ -434,14 +434,14 @@ public class SijiaoServiceImpl implements SijiaoService {
 	public void noPayHanderforDay(Integer offDay) {
 		String sql = "select * from edu_course_student ecs where ecs.IS_PAYED='0' and ecs.EDIT_DATE<?";
 		Date date = new Date(new Date().getTime() - offDay*12*60*60*1000l);
-		List<EduCourseStudent> ecses = eduCourseStudentService.getJdbcTemplate().queryForList(sql, EduCourseStudent.class, new Object[]{date});
-		for(EduCourseStudent ecs:ecses){
+		List<Map<String, Object>> ecses = eduCourseStudentService.getJdbcTemplate().queryForList(sql, new Object[]{date});
+		for(Map<String, Object> ecs:ecses){
 			sql = "update edu_course_student ecs set ecs.IS_PAYED='3' where ecs.COURSE_SID=? and ecs.IS_PAYED='0' and ecs.EDIT_DATE<?";
-			int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{ecs.getCourseSid(),date});
+			int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{ecs.get("COURSE_SID"),date});
 			if(rs > 0){
 				sql = "update edu_course ec set ec.PAY_STUDENTS=ec.PAY_STUDENTS - 1 where ec.COURSE_ID=? ";
-				rs = eduCourseService.getJdbcTemplate().update(sql, new Object[]{ecs.getCourseId()});
-				this.updateCoursePaynum(ecs.getUserId(), ecs.getCourseId(), -1);
+				rs = eduCourseService.getJdbcTemplate().update(sql, new Object[]{ecs.get("COURSE_ID")});
+				this.updateCoursePaynum((String)ecs.get("USER_ID"), (String)ecs.get("COURSE_ID"), -1);
 			}
 		}
 	}

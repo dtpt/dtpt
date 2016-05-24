@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import javax.ws.rs.PathParam;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,6 +23,8 @@ import com.dt.dtpt.util.Result;
 @Transactional(readOnly = true)
 public class PublicwxServiceImpl implements PublicwxService {
 
+	protected transient final Log log = LogFactory.getLog(PublicwxServiceImpl.class);
+	
 	@Autowired
 	WxPublicService wxpublicService;
 	
@@ -55,6 +59,7 @@ public class PublicwxServiceImpl implements PublicwxService {
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Result attentionPublic(WxUserPublic wxUserPublic, @PathParam("shId") String shId) {
+		log.error("=====0============");
 		if(shId != null && !"".equals(shId) && wxUserPublic != null && wxUserPublic.getWxOpenid() != null 
 				&& !"".equals(wxUserPublic.getWxOpenid())){
 			WxPublic wxPublic = new WxPublic();
@@ -62,30 +67,37 @@ public class PublicwxServiceImpl implements PublicwxService {
 			List<WxPublic> wxPublics = wxpublicService.select(wxPublic);
 			wxPublic  = null;
 			String res = "";
+			log.error("=====1============");
 			if(wxPublics != null && wxPublics.size() > 0){
 				wxPublic = wxPublics.get(0);
 				WxUserPublic wup = new WxUserPublic();
 				wup.setPublicId(wxPublic.getPublicId());
 				wup.setWxOpenid(wxUserPublic.getWxOpenid());
+				log.error("=====2============");
 				wup = wxuserPublicService.selectOne(wup);
 				Date date = new Date();
 				wxUserPublic.setAddDate(date);
 				wxUserPublic.setPublicId(wxPublic.getPublicId());
 				int rs = 0;
 				if(wup != null){
+					log.error("=====3============");
 					wxUserPublic.setUserPwxId(wup.getUserPwxId());
 					rs = wxuserPublicService.updateAll(wxUserPublic);
 				}else{
+					log.error("=====4============");
 					wxUserPublic.setUserPwxId(UUID.randomUUID().toString());
 					rs = wxuserPublicService.save(wxUserPublic);
 				}
+				log.error("=====5============");
 				if(rs > 0) return Result.success();
 				res = "更新数据库失败";
 			}else{
 				res = "未查找到对应公众号信息";
 			} 
+			log.error("=====6============");
 			return Result.failure("关注失败",res);
 		}else{
+			log.error("=====7============");
 			return Result.failure("参数校验失败", "商户编号或用户微信openID为空");
 		}
 	}
