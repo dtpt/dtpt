@@ -431,6 +431,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 		}
 	}
 
+	@Transactional(propagation = Propagation.REQUIRED)
 	public void noPayHanderforDay(Integer offDay) {
 		String sql = "select * from edu_course_student ecs where ecs.IS_PAYED='0' and ecs.EDIT_DATE<?";
 		Date date = new Date(new Date().getTime() - offDay*12*60*60*1000l);
