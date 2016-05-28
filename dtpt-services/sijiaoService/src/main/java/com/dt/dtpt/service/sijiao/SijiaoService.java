@@ -81,9 +81,9 @@ public interface SijiaoService {
 	 * @return 返回对象的success属性值为true时，添加成功,result值为courseSid(学员选课编号)；否则添加失败
 	 */
 	@POST
-	@Path("/addCourseByWx/{userOpenID}/{courseId}/{payId}")
+	@Path("/addCourseByWx/{userOpenID}/{courseId}")
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Result addCourseByWx(@PathParam("userOpenID") String userOpenID, @PathParam("courseId") String courseId, @PathParam("payId") String payId);
+	public Result addCourseByWx(@PathParam("userOpenID") String userOpenID, @PathParam("courseId") String courseId);
 	/**
 	 * 预付款确认课程详细信息
 	 * @param courseId 课程编号，不能为空
@@ -145,9 +145,9 @@ public interface SijiaoService {
 	 * @return 返回对象的success属性值为true时，可以付款；否则订单就是失效了，需要重新下单
 	 */
 	@GET
-	@Path("/prePay/{courseSid}")
+	@Path("/prePay/{courseSid}/{payId}")
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Result prePay(@PathParam("courseSid") String courseSid);
+	public Result prePay(@PathParam("courseSid") String courseSid, @PathParam("payId") String payId);
 	
 	/**
 	 * 检测未缴费的单，并判断可报人数是否为预警成数，是则置为已失效，已报名人数  -1

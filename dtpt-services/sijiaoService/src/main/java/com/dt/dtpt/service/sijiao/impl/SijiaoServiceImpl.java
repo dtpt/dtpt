@@ -210,7 +210,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Result addCourseByWx(@PathParam("userOpenID") String userOpenID, @PathParam("courseId") String courseId, @PathParam("payId") String payId) {
+	public Result addCourseByWx(@PathParam("userOpenID") String userOpenID, @PathParam("courseId") String courseId) {
 		if(userOpenID != null && !"".equals(userOpenID) && courseId != null && !"".equals(courseId)){
 			EduStudent eduStudent = new EduStudent();
 			eduStudent.setWxOpenid(userOpenID);
@@ -248,7 +248,6 @@ public class SijiaoServiceImpl implements SijiaoService {
 				cs.setSubject(course.getSubject());
 				cs.setSubjectSub(course.getSubjectSub());
 				cs.setUserId(course.getUserId());
-				cs.setPayId(payId);
 				rs = eduCourseStudentService.save(cs);
 				this.updateCoursePaynum(course.getUserId(), courseId, 1);
 				if(rs > 0) return new Result(true,null,null,cs.getCourseSid());
@@ -385,9 +384,9 @@ public class SijiaoServiceImpl implements SijiaoService {
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Result prePay(String courseSid) {
-		String sql = "update edu_course_student e set e.is_payed='2' where e.course_sid=? and e.is_payed='0';";
-		int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{courseSid});
+	public Result prePay(String courseSid, @PathParam("payId") String payId) {
+		String sql = "update edu_course_student e set e.is_payed='2',e.pay_id=? where e.course_sid=? and e.is_payed='0';";
+		int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{payId,courseSid});
 		if(rs > 0 ){
 			return Result.success();
 		}else{
