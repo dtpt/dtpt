@@ -225,7 +225,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 			qcs.setStudentId(eduStudent.getStudentId());
 			qcs.setIsPayed(0);
 			List<EduCourseStudent> qcses = eduCourseStudentService.select(qcs);
-			if(qcses != null && qcses.size() > 0) return new Result(true,"该课程您已经添加",null,qcs.getCourseSid());
+			if(qcses != null && qcses.size() > 0) return new Result(true,"该课程您已经添加",null,qcses.get(0).getCourseSid());
 			EduCourse course = new EduCourse();
 			course.setCourseId(courseId);
 			course = eduCourseService.selectOne(course);

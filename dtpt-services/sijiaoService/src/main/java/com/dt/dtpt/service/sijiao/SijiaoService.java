@@ -142,6 +142,7 @@ public interface SijiaoService {
 	/**
 	 * 判断是否可以付款，并置为订单状态为付款中
 	 * @param courseSid 学员选课编号(订单编号)，不能为空
+	 * @param payId 第三方支付订单号
 	 * @return 返回对象的success属性值为true时，可以付款；否则订单就是失效了，需要重新下单
 	 */
 	@GET
