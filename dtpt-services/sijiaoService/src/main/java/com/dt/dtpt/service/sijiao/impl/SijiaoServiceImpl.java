@@ -6,7 +6,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+
+import com.dt.dtpt.util.UUID;
 
 import javax.ws.rs.PathParam;
 
@@ -209,7 +210,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Result addCourseByWx(@PathParam("userOpenID") String userOpenID, @PathParam("courseId") String courseId) {
+	public Result addCourseByWx(@PathParam("userOpenID") String userOpenID, @PathParam("courseId") String courseId, @PathParam("payId") String payId) {
 		if(userOpenID != null && !"".equals(userOpenID) && courseId != null && !"".equals(courseId)){
 			EduStudent eduStudent = new EduStudent();
 			eduStudent.setWxOpenid(userOpenID);
@@ -247,6 +248,7 @@ public class SijiaoServiceImpl implements SijiaoService {
 				cs.setSubject(course.getSubject());
 				cs.setSubjectSub(course.getSubjectSub());
 				cs.setUserId(course.getUserId());
+				cs.setPayId(payId);
 				rs = eduCourseStudentService.save(cs);
 				this.updateCoursePaynum(course.getUserId(), courseId, 1);
 				if(rs > 0) return new Result(true,null,null,cs.getCourseSid());

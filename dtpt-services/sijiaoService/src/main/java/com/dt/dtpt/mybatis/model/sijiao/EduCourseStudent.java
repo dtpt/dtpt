@@ -86,6 +86,18 @@ public class EduCourseStudent implements Serializable {
     @Column(name = "COMMON")
     private String common;
 
+    /**
+     * 支付方式：1微信支付
+     */
+    @Column(name = "PAY_TYPE")
+    private Integer payType;
+    
+    /**
+     * 第三方支付订单号
+     */
+    @Column(name = "PAY_ID")
+    private String payId;
+    
     private static final long serialVersionUID = 1L;
 
     /**
@@ -321,4 +333,21 @@ public class EduCourseStudent implements Serializable {
     public void setCommon(String common) {
         this.common = common;
     }
+
+	public Integer getPayType() {
+		return payType;
+	}
+
+	public void setPayType(Integer payType) {
+		this.payType = payType;
+	}
+
+	public String getPayId() {
+		return payId;
+	}
+
+	public void setPayId(String payId) {
+		this.payId = payId;
+	}
+    
 }

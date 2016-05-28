@@ -2,7 +2,7 @@ package com.dt.dtpt.service.publicwx.impl;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
+import com.dt.dtpt.util.UUID;
 
 import javax.ws.rs.PathParam;
 
