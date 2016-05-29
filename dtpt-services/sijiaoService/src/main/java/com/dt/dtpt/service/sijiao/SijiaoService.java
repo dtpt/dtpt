@@ -21,6 +21,8 @@ import com.dt.dtpt.util.Result;
 @Produces({"application/json; charset=UTF-8", "text/xml; charset=UTF-8"})
 public interface SijiaoService {
 	
+	public static final int delayDay = 1;
+	public static final int delayPayMin = 30;
 	//==================== WX interface ==================
 	/**
 	 * 是否为管理员
@@ -160,12 +162,26 @@ public interface SijiaoService {
 	public void noPayhandler(@PathParam("warnNum") @DefaultValue("2") Integer warnNum);
 	
 	/**
-	 * 未缴费超出指定天数的课程，置为失效，即使可报人数还很多
+	 * 未缴费超出指定天数的课程，置为失效，默认值为1天
 	 * @param offDay
 	 */
 	@GET
 	@Path("/noPayHanderforDay/{offDay}")
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void noPayHanderforDay(@PathParam("offDay") @DefaultValue("1") Integer offDay);
+	
+	/**
+	 * 下单超出指定天数，同时缴费中已超出指定分钟数的课程，置为失效，下单超时默认为1天，支付超时默认为30分钟
+	 * @param offDay
+	 */
+	@GET
+	@Path("/payingHanderforDay/{offDay}/{payDelay}")
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void payingHanderforDay();
+	
+	@GET
+	@Path("/checkOrder/{orderId}")
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void checkOrder(@PathParam("orderId") @DefaultValue("1") String orderId);
 	//==================== WX interface ==================
 }

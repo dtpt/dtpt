@@ -385,8 +385,8 @@ public class SijiaoServiceImpl implements SijiaoService {
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Result prePay(String courseSid, @PathParam("payId") String payId) {
-		String sql = "update edu_course_student e set e.is_payed='2',e.pay_id=? where e.course_sid=? and e.is_payed='0';";
-		int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{payId,courseSid});
+		String sql = "update edu_course_student e set e.is_payed='2',e.pay_id=?,e.pay_date=? where e.course_sid=? and (e.is_payed='0' or e.is_payed='2')";
+		int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{payId,new Date(),courseSid});
 		if(rs > 0 ){
 			return Result.success();
 		}else{
@@ -448,4 +448,29 @@ public class SijiaoServiceImpl implements SijiaoService {
 		}
 	}
 
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void payingHanderforDay() {
+		String sql = "select * from edu_course_student ecs where ecs.IS_PAYED='2' and ecs.EDIT_DATE<? and ecs.PAY_DATE<?";
+		Date date = new Date(new Date().getTime() - delayDay*12*60*60*1000l);
+		Date pdate = new Date(new Date().getTime() - delayPayMin*60*1000l);
+		List<Map<String, Object>> ecses = eduCourseStudentService.getJdbcTemplate().queryForList(sql, new Object[]{date,pdate});
+		for(Map<String, Object> ecs:ecses){
+			sql = "update edu_course_student ecs set ecs.IS_PAYED='3' where ecs.COURSE_SID=? and ecs.IS_PAYED='2' and ecs.EDIT_DATE<? and ecs.PAY_DATE<?";
+			int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{ecs.get("COURSE_SID"),date,pdate});
+			if(rs > 0){
+				sql = "update edu_course ec set ec.PAY_STUDENTS=ec.PAY_STUDENTS - 1 where ec.COURSE_ID=? ";
+				rs = eduCourseService.getJdbcTemplate().update(sql, new Object[]{ecs.get("COURSE_ID")});
+				this.updateCoursePaynum((String)ecs.get("USER_ID"), (String)ecs.get("COURSE_ID"), -1);
+			}
+		}
+		
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void checkOrder(String orderId) {
+		
+	}
+
+	
+	
 }
