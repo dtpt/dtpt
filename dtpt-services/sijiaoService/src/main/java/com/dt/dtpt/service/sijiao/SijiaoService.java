@@ -175,7 +175,7 @@ public interface SijiaoService {
 	 * @param offDay
 	 */
 	@GET
-	@Path("/payingHanderforDay/{offDay}/{payDelay}")
+	@Path("/payingHanderforDay")
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void payingHanderforDay();
 	
