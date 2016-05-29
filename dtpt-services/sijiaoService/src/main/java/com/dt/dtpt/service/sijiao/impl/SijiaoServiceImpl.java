@@ -318,6 +318,10 @@ public class SijiaoServiceImpl implements SijiaoService {
 			}
 			List<EduCourseStudentView> ecsvs = new ArrayList<EduCourseStudentView>();
 			List<EduCourse> cs = shCourses.get(shId);
+			if(cs == null) {
+				sysnShCourses(shId);
+				cs = shCourses.get(shId);
+			}
 			Map<String, EduCourse> cMap = new HashMap<String, EduCourse>();
 			for(EduCourse ec:cs){
 				cMap.put(ec.getCourseId(), ec);
@@ -349,6 +353,10 @@ public class SijiaoServiceImpl implements SijiaoService {
 			}
 			List<EduCourseStudentView> ecsvs = new ArrayList<EduCourseStudentView>();
 			List<EduCourse> cs = shCourses.get(shId);
+			if(cs == null) {
+				sysnShCourses(shId);
+				cs = shCourses.get(shId);
+			}
 			Map<String, EduCourse> cMap = new HashMap<String, EduCourse>();
 			for(EduCourse ec:cs){
 				cMap.put(ec.getCourseId(), ec);
@@ -371,6 +379,10 @@ public class SijiaoServiceImpl implements SijiaoService {
 		eCourseStudent = eduCourseStudentService.selectOne(eCourseStudent);
 		if(eCourseStudent != null){
 			List<EduCourse> cs = shCourses.get(shId);
+			if(cs == null) {
+				sysnShCourses(shId);
+				cs = shCourses.get(shId);
+			}
 			Map<String, EduCourse> cMap = new HashMap<String, EduCourse>();
 			for(EduCourse ec:cs){
 				cMap.put(ec.getCourseId(), ec);
