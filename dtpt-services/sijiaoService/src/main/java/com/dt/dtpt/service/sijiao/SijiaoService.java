@@ -129,7 +129,7 @@ public interface SijiaoService {
 	 * @return 返回对象的success属性值为true时，result属性为List<com.dt.dtpt.vo.EduCourseStudentView>
 	 */
 	@GET
-	@Path("/getMyCourse/{shId}/{userOpenID}")
+	@Path("/getMyCourseForTime/{shId}/{userOpenID}")
 	public Result getMyCourseForTime(@PathParam("shId") String shId,@PathParam("userOpenID") String userOpenID);
 	
 	/**

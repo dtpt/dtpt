@@ -289,14 +289,13 @@ public class SijiaoServiceImpl implements SijiaoService {
 			cs.setCourseSid(courseSid);
 			cs = eduCourseStudentService.selectOne(cs);
 			if(cs != null){
-				if(cs.getIsPayed() < 1){
-					cs.setIsPayed(1);
-					cs.setPayJe(BigDecimal.valueOf(Double.valueOf(payJe)));
-					cs.setPayDate(new Date());
-					int rs = eduCourseStudentService.updateNotNull(cs);
-					if(rs < 1) return Result.failure("付款状态修改失败");
+				String sql = "update edu_course_student e set e.is_payed='1',e.pay_date=? where e.course_sid=? and e.is_payed='2'";
+				int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{new Date(),courseSid});
+				if(rs > 0 ){
+					return Result.success();
+				}else{
+					return Result.failure("付款状态修改失败");
 				}
-				return Result.success();
 			}
 			return Result.failure("系统中未查到该学员选课信息");
 		}else{
