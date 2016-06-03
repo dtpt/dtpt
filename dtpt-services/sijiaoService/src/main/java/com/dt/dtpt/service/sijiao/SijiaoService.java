@@ -133,6 +133,17 @@ public interface SijiaoService {
 	public Result getMyCourseForTime(@PathParam("shId") String shId,@PathParam("userOpenID") String userOpenID);
 	
 	/**
+	 * 判断用户是否已经购买过指定课程
+	 * @param shId 管理员用户编号，不能为空
+	 * @param userOpenID 当前操作用户微信OPENID，不能为空
+	 * @param courseId 课程编号，不能为空
+	 * @return
+	 */
+	@GET
+	@Path("/isBuyed/{shId}/{userOpenID}/{courseId}")
+	public boolean isBuyed(@PathParam("shId") String shId,@PathParam("userOpenID") String userOpenID,@PathParam("courseId") String courseId);
+	
+	/**
 	 * 根据已添加课程编号获取已添加课程信息
 	 * @param courseSid 学员选课编号(订单编号)，不能为空
 	 * @return 返回对象的success属性值为true时，result属性为com.dt.dtpt.vo.EduCourseStudentView

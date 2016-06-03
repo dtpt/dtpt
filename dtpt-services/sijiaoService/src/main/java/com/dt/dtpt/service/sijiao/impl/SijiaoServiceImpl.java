@@ -336,6 +336,24 @@ public class SijiaoServiceImpl implements SijiaoService {
 			return Result.failure("参数校验失败","用户微信OPENID或商户ID为空");
 		}
 	}
+	
+	public boolean isBuyed(String shId, String userOpenID, String courseId) {
+		boolean rs = false;
+		EduStudent student = new EduStudent();
+		student.setWxOpenid(userOpenID);
+		List<EduStudent> students = eduStudentService.select(student);
+		List<EduCourseStudent> ecs = new ArrayList<EduCourseStudent>();
+		if(students != null && students.size() > 0){
+			EduCourseStudent eCourseStudent = new EduCourseStudent();
+			eCourseStudent.setUserId(shId);
+			eCourseStudent.setStudentId(students.get(0).getStudentId());
+			eCourseStudent.setIsPayed(1);
+			eCourseStudent.setCourseId(courseId);
+			ecs = eduCourseStudentService.select(eCourseStudent);
+			if(ecs != null && ecs.size() > 0) rs = true;
+		}
+		return rs;
+	}
 
 	public Result getMyCourseForTime(String shId, String userOpenID) {
 		if(userOpenID != null && !"".equals(userOpenID) && shId != null && !"".equals(shId)){
