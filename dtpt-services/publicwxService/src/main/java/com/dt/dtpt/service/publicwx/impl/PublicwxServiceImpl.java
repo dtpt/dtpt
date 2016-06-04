@@ -47,7 +47,7 @@ public class PublicwxServiceImpl implements PublicwxService {
 	public Result isManerger(@PathParam("userOpenID") String userOpenID, @PathParam("shId") String shId) {
 		if(userOpenID != null && !"".equals(userOpenID) && shId != null && !"".equals(shId)){
 			WxPublic wxPublic = (WxPublic) this.getWxPublicByShid(shId).getResult();
-			if(wxPublic != null && userOpenID.equals(wxPublic.getWxOpenid())){
+			if(wxPublic != null && wxPublic.getWxOpenid() != null && wxPublic.getWxOpenid().contains(userOpenID)){
 				return Result.success();
 			}else{
 				return Result.failure("操作用户账号非该商户管理员账号");
