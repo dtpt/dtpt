@@ -1,9 +1,9 @@
 package com.dt.dtpt.service.sijiao.impl;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +12,7 @@ import com.dt.dtpt.util.UUID;
 import javax.ws.rs.PathParam;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +34,7 @@ import com.dt.dtpt.vo.EduCourseStudentView;
 @Transactional(readOnly = true)
 public class SijiaoServiceImpl implements SijiaoService {
 
-	public static Map<String, List<EduCourse>> shCourses = new HashMap<String, List<EduCourse>>();
+	public static Map<String, LinkedList<EduCourse>> shCourses = new HashMap<String, LinkedList<EduCourse>>();
 	
 	public static Map<String, Long> sysnTimes = new HashMap<String, Long>();
 	
@@ -77,28 +78,33 @@ public class SijiaoServiceImpl implements SijiaoService {
 	}
 	
 	private void addShCourses(String shId,EduCourse eduCourse){
-		if(shCourses.containsKey(shId)){
+		/*if(shCourses.containsKey(shId)){
 			shCourses.get(shId).add(eduCourse);
 		}else{
-			this.reloadShCourses(shId);
-		}
+		}*/
+		this.reloadShCourses(shId);
 	}
 	
+	@SuppressWarnings("unchecked")
 	private List<EduCourse> sysnShCourses(String shId){
 		List<EduCourse> ecs = null;
 		if(shCourses.containsKey(shId)){
 			Long st = sysnTimes.get(shId);
 			if(new Date().getTime() - st > sysnTime){
 				shCourses.put(shId, null);
-				EduCourse eduCourse = new EduCourse();
-				eduCourse.setUserId(shId);
-				shCourses.put(shId, eduCourseService.select(eduCourse));
+				String sql = "select ec.* from edu_course ec where ec.USER_ID=? order by ec.EDIT_DATE desc";
+				ecs = eduCourseStudentService.getJdbcTemplate().query(sql, new Object[]{shId},new BeanPropertyRowMapper(EduCourse.class));
+				LinkedList<EduCourse> lecs = new LinkedList<EduCourse>();
+				if(ecs != null) lecs.addAll(ecs);
+				shCourses.put(shId, lecs);
 				sysnTimes.put(shId, new Date().getTime());
 			}
 		}else{
-			EduCourse eduCourse = new EduCourse();
-			eduCourse.setUserId(shId);
-			shCourses.put(shId, eduCourseService.select(eduCourse));
+			String sql = "select ec.* from edu_course ec where ec.USER_ID=? order by ec.EDIT_DATE desc";
+			ecs = eduCourseStudentService.getJdbcTemplate().query(sql, new Object[]{shId},new BeanPropertyRowMapper(EduCourse.class));
+			LinkedList<EduCourse> lecs = new LinkedList<EduCourse>();
+			if(ecs != null) lecs.addAll(ecs);
+			shCourses.put(shId, lecs);
 			sysnTimes.put(shId, new Date().getTime());
 		}
 		ecs = shCourses.get(shId);
@@ -190,7 +196,6 @@ public class SijiaoServiceImpl implements SijiaoService {
 		if(userOpenID != null && !"".equals(userOpenID)){
 			if(eduStudent != null && eduStudent.getStudentName() != null && !"".equals(eduStudent.getStudentName())
 					&& eduStudent.getPhone() != null && !"".equals(eduStudent.getPhone())
-					&& eduStudent.getAddress() != null && !"".equals(eduStudent.getAddress())
 					&& eduStudent.getBirthday() != null && eduStudent.getSex() != null 
 					&& eduStudent.getInGrade() != null){
 				Date date = new Date();
@@ -289,8 +294,8 @@ public class SijiaoServiceImpl implements SijiaoService {
 			cs.setCourseSid(courseSid);
 			cs = eduCourseStudentService.selectOne(cs);
 			if(cs != null){
-				String sql = "update edu_course_student e set e.is_payed='1',e.pay_date=? where e.course_sid=? and e.is_payed='2'";
-				int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{new Date(),courseSid});
+				String sql = "update edu_course_student e set e.is_payed='1',e.pay_date=?,e.pay_je=? where e.course_sid=? and e.is_payed='2'";
+				int rs = eduCourseStudentService.getJdbcTemplate().update(sql, new Object[]{new Date(),payJe,courseSid});
 				if(rs > 0 ){
 					return Result.success();
 				}else{
@@ -303,18 +308,11 @@ public class SijiaoServiceImpl implements SijiaoService {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public Result getMyCourse(String shId, String userOpenID) {
 		if(userOpenID != null && !"".equals(userOpenID) && shId != null && !"".equals(shId)){
-			EduStudent student = new EduStudent();
-			student.setWxOpenid(userOpenID);
-			List<EduStudent> students = eduStudentService.select(student);
-			List<EduCourseStudent> ecs = new ArrayList<EduCourseStudent>();
-			if(students != null && students.size() > 0){
-				EduCourseStudent eCourseStudent = new EduCourseStudent();
-				eCourseStudent.setUserId(shId);
-				eCourseStudent.setStudentId(students.get(0).getStudentId());
-				ecs = eduCourseStudentService.select(eCourseStudent);
-			}
+			String sql = "select ec.* from edu_course_student ec ,edu_student es where ec.STUDENT_ID=es.STUDENT_ID and es.WX_OPENID=? and ec.USER_ID=? order by ec.EDIT_DATE desc";
+			List<EduCourseStudent> ecs = eduCourseStudentService.getJdbcTemplate().query(sql, new Object[]{userOpenID, shId},new BeanPropertyRowMapper(EduCourseStudent.class));
 			List<EduCourseStudentView> ecsvs = new ArrayList<EduCourseStudentView>();
 			List<EduCourse> cs = shCourses.get(shId);
 			if(cs == null) {
@@ -355,19 +353,11 @@ public class SijiaoServiceImpl implements SijiaoService {
 		return rs;
 	}
 
+	@SuppressWarnings("unchecked")
 	public Result getMyCourseForTime(String shId, String userOpenID) {
 		if(userOpenID != null && !"".equals(userOpenID) && shId != null && !"".equals(shId)){
-			EduStudent student = new EduStudent();
-			student.setWxOpenid(userOpenID);
-			List<EduStudent> students = eduStudentService.select(student);
-			List<EduCourseStudent> ecs = new ArrayList<EduCourseStudent>();
-			if(students != null && students.size() > 0){
-				EduCourseStudent eCourseStudent = new EduCourseStudent();
-				eCourseStudent.setUserId(shId);
-				eCourseStudent.setStudentId(students.get(0).getStudentId());
-				eCourseStudent.setIsPayed(1);
-				ecs = eduCourseStudentService.select(eCourseStudent);
-			}
+			String sql = "select ec.* from edu_course_student ec ,edu_student es where ec.STUDENT_ID=es.STUDENT_ID and es.WX_OPENID=? and ec.USER_ID=? and ec.IS_PAYED='1' order by ec.PAY_DATE desc";
+			List<EduCourseStudent> ecs = eduCourseStudentService.getJdbcTemplate().query(sql, new Object[]{userOpenID, shId},new BeanPropertyRowMapper(EduCourseStudent.class));
 			List<EduCourseStudentView> ecsvs = new ArrayList<EduCourseStudentView>();
 			List<EduCourse> cs = shCourses.get(shId);
 			if(cs == null) {
